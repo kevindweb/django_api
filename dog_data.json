@@ -1,0 +1,18 @@
+{
+    "dog_list":[
+        {
+            "name":"Doge",
+            "birth_day":"08/26/1998",
+            "breed":"Golden Retriever",
+            "favorite_activity":"Jumping for frisbees",
+            "sex":"M"
+        },
+        {
+            "name": "Buddy",
+            "birth_day": "11/09/2009",
+            "breed": "Dalmatian",
+            "favorite_activity": "Posing for pictures",
+            "sex": "F"
+        }
+    ]
+}
