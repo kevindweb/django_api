@@ -10,6 +10,62 @@ from dog_info.models import Dog, RequestData
 User = get_user_model()
 
 
+def get_handler_method(request_handler, http_method):
+    try:
+        handler_method = getattr(request_handler, http_method.lower())
+        # check to see if we defined the logic for this HTTP method
+        if callable(handler_method):
+            return handler_method
+    except AttributeError:
+        pass
+
+
+class RequestResource:
+    http_methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+    # accepted methods
+    logs = logging.getLogger(__name__)
+
+    @classmethod
+    @csrf_exempt
+    def dispatch(cls, request, *args, **kwargs):
+        try:
+            request_handler = cls()
+            # cls / self 
+            if request.method in cls.http_methods:
+                handler_method = get_handler_method(
+                    request_handler, request.method)
+                if handler_method:
+                    return handler_method(request, *args, **kwargs)
+
+            methods = [method for method in cls.http_methods if get_handler_method(
+                request_handler, method)]
+            if len(methods) > 0:
+                raise Exception("HTTP method not allowed", 405)
+            else:
+                raise Exception("Page not found", 404)
+        except Exception as e:
+            # handle any exception by returning it and the status code
+            if e == None or len(e.args) == 0:
+                msg = "Unknown error"
+                status = 500
+            else:
+                msg = e.args[0]
+                if len(e.args) > 1:
+                    status = e.args[1]
+                else:
+                    # we don't know the status code
+                    status = 500
+            error = {
+                "error": msg
+            }
+            if status == 500:
+                cls.logs.error(msg)
+            else:
+                cls.logs.debug(msg)
+            # log the error
+            return JsonResponse(error, status=status, json_dumps_params={"indent": 2})
+
+
 class Handler():
     request_limit = 20
     curr_timezone = timezone.utc
@@ -23,7 +79,6 @@ class Handler():
         self.model = kwargs.get("model", None)
         if not self.model:
             raise Exception("No abstracted model", 500)
-        self.logs = logging.getLogger(__name__)
 
     def get_client_ip(self):
         try:
@@ -84,55 +139,37 @@ class Handler():
 
     def start(self, func):
         # receive request and apply context-given logic
-        try:
-            request_timeout, num_requests = self.check_request_num()
-            if request_timeout:
-                if num_requests > 0:
-                    raise Exception(
-                        "You have made %s requests this hour" % num_requests, 429)
-                    # we've recieved too many requests from this IP 
-                elif func.__name__ != "create_user_logic":
-                    # a user has not been created on this ip
-                    raise Exception("A user has not been created yet", 401)
-            if self.authenticate:
-                # need to authenticate api_token before moving forward
-                self.authenticate_request()
-            if self.request.method == "GET":
-                func(self, self.model, self.id)
-            else:
-                body = json.loads(self.request.body)
-                if set(body.keys()) == set(self.data["request_schema"].keys()):
-                    func(self, self.model, body)
-                    # call the function passed in to handle specific logic
-            if self.item['model'] == ("%s.user" % self.app_name):
-                # remove fields unnecessary for API user
-                del self.item['pk']
-                del self.item["fields"]["last_login"]
-                del self.item["fields"]["is_staff"]
-                del self.item["fields"]["is_superuser"]
-                del self.item["fields"]["groups"]
-                del self.item["fields"]["user_permissions"]
-            del self.item['model']
-            # remove model property
-            self.data = {"data": self.item}
-            return JsonResponse(self.data, status=self.status)
-        except Exception as e:
-            # handle any exception by returning it and the status code
-            if e == None or len(e.args) == 0:
-                msg = "Unknown error"
-                status = 500
-            else:
-                msg = e.args[0]
-                if len(e.args) > 1:
-                    status = e.args[1]
-                else:
-                    # we don't know the status code
-                    status = 500
-            error = {
-                "error": msg
-            }
-            self.logs.debug(msg)
-            return JsonResponse(error, status=status, json_dumps_params={"indent": 2})
+        request_timeout, num_requests = self.check_request_num()
+        if request_timeout:
+            if num_requests > 0:
+                raise Exception(
+                    "You have made %s requests this hour" % num_requests, 429)
+                # we've recieved too many requests from this IP 
+            elif func.__name__ != "create_user_logic":
+                # a user has not been created on this ip
+                raise Exception("A user has not been created yet", 401)
+        if self.authenticate:
+            # need to authenticate api_token before moving forward
+            self.authenticate_request()
+        if self.request.method == "GET":
+            func(self, self.model, self.id)
+        else:
+            body = json.loads(self.request.body)
+            if set(body.keys()) == set(self.data["request_schema"].keys()):
+                func(self, self.model, body)
+                # call the function passed in to handle specific logic
+        if self.item['model'] == ("%s.user" % self.app_name):
+            # remove fields unnecessary for API user
+            del self.item['pk']
+            del self.item["fields"]["last_login"]
+            del self.item["fields"]["is_staff"]
+            del self.item["fields"]["is_superuser"]
+            del self.item["fields"]["groups"]
+            del self.item["fields"]["user_permissions"]
+        del self.item['model']
+        # remove model property
+        self.data = {"data": self.item}
+        return JsonResponse(self.data, status=self.status)
 
     def get_logic(self, model, id):
         # our objects have the same keys
@@ -145,7 +182,10 @@ class Handler():
                 raise Exception("Could not find item", 404)
             self.item = json.loads(serializers.serialize('json', [items[0], ]))[0]
                 
-    
+    def post_logic(self, model, id, body):
+        # logic to run if we get a post request with required data
+        pass
+
     def create_user_logic(self, model, body):
         username = body['username']
         password = body['password']
@@ -199,14 +239,21 @@ class Handler():
             # already created this valid user
         self.item = json.loads(serializers.serialize('json', [user, ]))[0]
             
-
-@csrf_exempt
-@require_GET
-def get_dog(request, id):
-    # receive dog from id 
-    print(request.method)
-    abstract_request = Handler(request, 400, authenticate=True, id=id, model=Dog)
-    return abstract_request.start(Handler.get_logic)
+class DogView(RequestResource):
+    def get(self, request, id):
+        # receive dog from id
+        abstract_request = Handler(
+            request, 400, authenticate=True, id=id, model=Dog)
+        return abstract_request.start(Handler.get_logic)
+    
+    def put(self, request, id):
+        # receive dog from id
+        print("put: " + str(id))
+        # abstract_request = Handler(
+        #     request, 400, authenticate=True, id=id, model=Dog)
+        # return abstract_request.start(Handler.get_logic)
+        return JsonResponse({"put": "SDF"})
+    
 
 @csrf_exempt
 @require_POST

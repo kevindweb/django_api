@@ -26,3 +26,27 @@
 2018-07-29 18:00:41,935 [DEBUG] dog_info.views: 'Dog' object does not support item deletion
 2018-07-29 18:01:27,309 [DEBUG] dog_info.views: list indices must be integers or slices, not str
 2018-07-29 18:05:59,434 [DEBUG] dog_info.views: create_user_logic() takes 2 positional arguments but 3 were given
+2018-07-29 18:22:36,606 [WARNING] dog_info.errors: Status: 404 -- Path: static/admin/js/vendor/jquery/jquery.min.js -- Ip: 127.0.0.1
+2018-07-29 18:22:36,606 [WARNING] django.request: Not Found: /static/admin/js/vendor/jquery/jquery.min.js
+2018-07-29 18:22:36,608 [WARNING] dog_info.errors: Status: 404 -- Path: static/admin/js/actions.min.js -- Ip: 127.0.0.1
+2018-07-29 18:22:36,609 [WARNING] django.request: Not Found: /static/admin/js/actions.min.js
+2018-07-29 18:22:36,616 [WARNING] dog_info.errors: Status: 404 -- Path: static/admin/js/vendor/xregexp/xregexp.min.js -- Ip: 127.0.0.1
+2018-07-29 18:22:36,617 [WARNING] django.request: Not Found: /static/admin/js/vendor/xregexp/xregexp.min.js
+2018-07-29 18:22:36,620 [WARNING] dog_info.errors: Status: 404 -- Path: static/admin/js/prepopulate.min.js -- Ip: 127.0.0.1
+2018-07-29 18:22:36,620 [WARNING] django.request: Not Found: /static/admin/js/prepopulate.min.js
+2018-07-29 18:22:36,762 [WARNING] dog_info.errors: Status: 404 -- Path: static/admin/js/vendor/jquery/jquery.min.js -- Ip: 127.0.0.1
+2018-07-29 18:22:36,763 [WARNING] django.request: Not Found: /static/admin/js/vendor/jquery/jquery.min.js
+2018-07-29 18:22:36,771 [WARNING] dog_info.errors: Status: 404 -- Path: static/admin/js/actions.min.js -- Ip: 127.0.0.1
+2018-07-29 18:22:36,771 [WARNING] django.request: Not Found: /static/admin/js/actions.min.js
+2018-07-29 18:22:36,777 [WARNING] dog_info.errors: Status: 404 -- Path: static/admin/js/prepopulate.min.js -- Ip: 127.0.0.1
+2018-07-29 18:22:36,778 [WARNING] django.request: Not Found: /static/admin/js/prepopulate.min.js
+2018-07-29 18:22:36,784 [WARNING] dog_info.errors: Status: 404 -- Path: static/admin/js/vendor/xregexp/xregexp.min.js -- Ip: 127.0.0.1
+2018-07-29 18:22:36,784 [WARNING] django.request: Not Found: /static/admin/js/vendor/xregexp/xregexp.min.js
+2018-07-29 19:01:26,559 [ERROR] django.request: Internal Server Error: /api/v1/get_dog/7b49bbc6-d87b-42ce-87d5-fa512c2855f0
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/exception.py", line 35, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/base.py", line 139, in _get_response
+    "returned None instead." % (callback.__module__, view_name)
+ValueError: The view dog_info.views.method.__call__ didn't return an HttpResponse object. It returned None instead.
+2018-07-29 19:01:26,584 [WARNING] dog_info.errors: Status: 500 -- Path: Server error handling request -- Ip: 127.0.0.1

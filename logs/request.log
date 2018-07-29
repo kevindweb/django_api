@@ -271,3 +271,18 @@ AttributeError: 'dict' object has no attribute 'path'
 2018-07-29 17:46:41,326 [WARNING] django.request: Not Found: /static/admin/js/actions.min.js
 2018-07-29 17:46:41,333 [WARNING] django.request: Not Found: /static/admin/js/prepopulate.min.js
 2018-07-29 17:46:41,339 [WARNING] django.request: Not Found: /static/admin/js/vendor/xregexp/xregexp.min.js
+2018-07-29 18:22:36,606 [WARNING] django.request: Not Found: /static/admin/js/vendor/jquery/jquery.min.js
+2018-07-29 18:22:36,609 [WARNING] django.request: Not Found: /static/admin/js/actions.min.js
+2018-07-29 18:22:36,617 [WARNING] django.request: Not Found: /static/admin/js/vendor/xregexp/xregexp.min.js
+2018-07-29 18:22:36,620 [WARNING] django.request: Not Found: /static/admin/js/prepopulate.min.js
+2018-07-29 18:22:36,763 [WARNING] django.request: Not Found: /static/admin/js/vendor/jquery/jquery.min.js
+2018-07-29 18:22:36,771 [WARNING] django.request: Not Found: /static/admin/js/actions.min.js
+2018-07-29 18:22:36,778 [WARNING] django.request: Not Found: /static/admin/js/prepopulate.min.js
+2018-07-29 18:22:36,784 [WARNING] django.request: Not Found: /static/admin/js/vendor/xregexp/xregexp.min.js
+2018-07-29 19:01:26,559 [ERROR] django.request: Internal Server Error: /api/v1/get_dog/7b49bbc6-d87b-42ce-87d5-fa512c2855f0
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/exception.py", line 35, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/base.py", line 139, in _get_response
+    "returned None instead." % (callback.__module__, view_name)
+ValueError: The view dog_info.views.method.__call__ didn't return an HttpResponse object. It returned None instead.
