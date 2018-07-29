@@ -20,3 +20,10 @@ class Dog(models.Model):
     breed = models.CharField(max_length=max_field_length, blank=True)
     favorite_activity = models.TextField()
     sex = models.CharField(choices=sex_choices, max_length=1)
+
+class RequestData(models.Model):
+    ip_address = models.GenericIPAddressField(unique=True)
+    users = models.ManyToManyField(User)
+    earliest_request = models.DateTimeField(null=True)
+    last_request = models.DateTimeField(null=True)
+    requests_this_hour = models.IntegerField()

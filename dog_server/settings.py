@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'dog_info',
 ]
 
+USE_TZ = True
+TIME_ZONE = 'UTC'
+
 AUTH_USER_MODEL = "dog_info.User"
 
 LOGGING = {

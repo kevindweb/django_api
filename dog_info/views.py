@@ -1,24 +1,68 @@
 import json
 import logging
+from datetime import datetime, timezone
 from django.http import JsonResponse
 from django.core import serializers
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
-from dog_info.models import Dog
+from dog_info.models import Dog, RequestData
 User = get_user_model()
 
 
 class Handler():
+    request_limit = 10
+    curr_timezone = timezone.utc
     def __init__(self, request, default_data, default_status):
         self.request = request
         self.data = default_data
         self.status = default_status
         self.logs = logging.getLogger(__name__)
 
+    def get_client_ip(self):
+        x_forwarded_for = self.request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = self.request.META.get('REMOTE_ADDR')
+        return ip
+
+    def check_request_num(self):
+        ip_address = self.get_client_ip()
+        timeout = False
+        num_requests = 0
+        try:
+            request_data = RequestData.objects.filter(ip_address=ip_address)
+        except:
+            raise Exception("Error finding ip address", 500)
+        if len(request_data) > 0:
+            # not first request
+            request_data = request_data[0]
+            request_data.last_request = datetime.now(self.curr_timezone)
+            earliest_request = request_data.earliest_request
+            update_fields = ["requests_this_hour", "last_request"]
+            if (request_data.last_request - earliest_request).total_seconds() > 3600:
+                # the hour is done, reset the request count
+                request_data.earliest_request = datetime.now(self.curr_timezone)
+                request_data.requests_this_hour = 1
+                update_fields += ["earliest_request"]
+                # update earliest request as well 
+            else:
+                request_data.requests_this_hour += 1
+            request_data.save(update_fields=update_fields)
+            num_requests = request_data.requests_this_hour
+            if num_requests > self.request_limit:
+                timeout = True
+        return timeout, num_requests
+
     def start(self, func):
         # receive request and apply context-given logic
         try:
+            request_timeout, num_requests = self.check_request_num()
+            if request_timeout:
+                raise Exception(
+                    "You have made %s requests this hour" % num_requests, 429)
+                # we've recieved too many requests from this IP 
             body = json.loads(self.request.body)
             if set(body.keys()) == set(self.data["request_schema"].keys()):
                 func(self, body)

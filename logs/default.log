@@ -1,1 +1,7 @@
 2018-07-28 21:01:38,967 [DEBUG] dog_info.views: Authentication failed
+2018-07-28 23:01:24,285 [DEBUG] dog_info.views: Authentication failed
+2018-07-29 00:07:38,719 [DEBUG] dog_info.views: Error finding ip address
+2018-07-29 00:13:02,612 [DEBUG] dog_info.views: You have made 7 requests this hour
+2018-07-29 00:30:04,337 [DEBUG] dog_info.views: can't subtract offset-naive and offset-aware datetimes
+2018-07-29 00:37:32,318 [DEBUG] dog_info.views: The following fields do not exist in this model or are m2m fields: s, _, i, a, q, u, t, l, e, r
+2018-07-29 00:41:29,254 [DEBUG] dog_info.views: You have made 29 requests this hour
