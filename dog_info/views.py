@@ -11,13 +11,14 @@ User = get_user_model()
 
 
 class Handler():
-    request_limit = 10
+    request_limit = 20
     curr_timezone = timezone.utc
-    def __init__(self, request, default_data, default_status):
+    def __init__(self, request, default_data, default_status, authenticate=False):
         self.request = request
         self.data = default_data
         self.status = default_status
         self.logs = logging.getLogger(__name__)
+        self.authenticate = authenticate
 
     def get_client_ip(self):
         x_forwarded_for = self.request.META.get('HTTP_X_FORWARDED_FOR')
@@ -28,15 +29,15 @@ class Handler():
         return ip
 
     def check_request_num(self):
-        ip_address = self.get_client_ip()
+        self.ip_address = self.get_client_ip()
         timeout = False
         num_requests = 0
         try:
-            request_data = RequestData.objects.filter(ip_address=ip_address)
+            request_data = RequestData.objects.filter(ip_address=self.ip_address)
         except:
             raise Exception("Error finding ip address", 500)
         if len(request_data) > 0:
-            # not first request
+            # ip is defined
             request_data = request_data[0]
             request_data.last_request = datetime.now(self.curr_timezone)
             earliest_request = request_data.earliest_request
@@ -53,17 +54,38 @@ class Handler():
             num_requests = request_data.requests_this_hour
             if num_requests > self.request_limit:
                 timeout = True
+        else:
+            # ip address has not been set
+            timeout = True
         return timeout, num_requests
+
+    def authenticate_request(self, body):
+        try:
+            authenticated = len(User.objects.filter(
+                api_token=body["api_token"])) > 0
+        except:
+            raise Exception("Invalid api_token", 401)
+        if not authenticated:
+            raise Exception("Authentication failed", 401)
+        # otherwise continue
 
     def start(self, func):
         # receive request and apply context-given logic
         try:
             request_timeout, num_requests = self.check_request_num()
             if request_timeout:
-                raise Exception(
-                    "You have made %s requests this hour" % num_requests, 429)
-                # we've recieved too many requests from this IP 
+                if num_requests > 0:
+                    raise Exception(
+                        "You have made %s requests this hour" % num_requests, 429)
+                    # we've recieved too many requests from this IP 
+                elif func.__name__ != "create_user_logic":
+                    # a user has not been created on this ip
+                    raise Exception("A user has not been created yet", 401)
             body = json.loads(self.request.body)
+            if self.authenticate:
+                # need to authenticate api_token before moving forward
+                print("authenticating request")
+                self.authenticate_request(body)
             if set(body.keys()) == set(self.data["request_schema"].keys()):
                 func(self, body)
                 # call the function passed in to handle specific logic
@@ -84,27 +106,20 @@ class Handler():
                 "error": msg
             }
             self.logs.debug(msg)
-            return JsonResponse(error, status=status)
+            return JsonResponse(error, status=status, json_dumps_params={"indent": 2})
 
     def get_dog_logic(self, body):
         # our objects have the same keys
             self.status = 200
             try:
-                authenticated = len(User.objects.filter(
-                    api_token=body["api_token"])) > 0
+                dog = Dog.objects.filter(id=body["dog"])
             except:
-                raise Exception("Invalid api_token", 401)
-            if authenticated:
-                try:
-                    dog = Dog.objects.filter(id=body["dog"])
-                except:
-                    raise Exception("Error finding dog", 500)
-                if len(dog) == 0:
-                    raise Exception("Could not find dog", 404)
-                dog = serializers.serialize('json', [dog[0], ])
-                self.data = {"dog": dog}
-            else:
-                raise Exception("Authentication failed", 401)
+                raise Exception("Error finding dog", 500)
+            if len(dog) == 0:
+                raise Exception("Could not find dog", 404)
+            dog = json.loads(serializers.serialize('json', [dog[0], ]))
+            self.data = {"dog": dog}
+                
     
     def create_user_logic(self, body):
         username = body['username']
@@ -136,12 +151,27 @@ class Handler():
                     raise Exception("Could not create user", 500)
                 user.save()
                 self.status = 201
+                # try:
+                ip = RequestData.objects.filter(ip_address=self.ip_address)
+                if len(ip) > 0:
+                    ip = ip[0]
+                    if not user in ip.users.all():
+                        # check for duplicate
+                        ip.users.add(user)
+                        # add user to current ip address
+                else:
+                    # add ip address
+                    now = datetime.now(self.curr_timezone)
+                    ip = RequestData.objects.create(ip_address=self.ip_address, earliest_request=now, last_request=now, requests_this_hour=1)
+                    ip.users.add(user)
+                # except:
+                #     raise Exception("User couldn't be added to ip address", 500)
         elif not user.check_password(password):
             raise Exception("User already created but invalid password", 401)
         else:
             self.status = 200
             # already created this valid user
-        user = serializers.serialize('json', [user, ])
+        user = json.loads(serializers.serialize('json', [user, ]))
         self.data = {
             "user": user
         }
@@ -158,7 +188,7 @@ def get_dog(request):
             "dog": "UUID"
         }
     }
-    abstract_request = Handler(request, data, 400)
+    abstract_request = Handler(request, data, 400, authenticate=True)
     return abstract_request.start(Handler.get_dog_logic)
 
 @csrf_exempt
