@@ -1,17 +1,28 @@
-2018-07-28 21:01:38,967 [DEBUG] dog_info.views: Authentication failed
-2018-07-28 23:01:24,285 [DEBUG] dog_info.views: Authentication failed
-2018-07-29 00:07:38,719 [DEBUG] dog_info.views: Error finding ip address
-2018-07-29 00:13:02,612 [DEBUG] dog_info.views: You have made 7 requests this hour
-2018-07-29 00:30:04,337 [DEBUG] dog_info.views: can't subtract offset-naive and offset-aware datetimes
-2018-07-29 00:37:32,318 [DEBUG] dog_info.views: The following fields do not exist in this model or are m2m fields: s, _, i, a, q, u, t, l, e, r
-2018-07-29 00:41:29,254 [DEBUG] dog_info.views: You have made 29 requests this hour
-2018-07-29 12:41:00,347 [WARNING] django.request: Not Found: /favicon.ico
-2018-07-29 12:41:43,214 [DEBUG] dog_info.views: A user has not been created yet
-2018-07-29 12:57:28,570 [DEBUG] dog_info.views: A user has not been created yet
-2018-07-29 12:58:41,880 [DEBUG] dog_info.views: A user has not been created yet
-2018-07-29 13:12:21,003 [DEBUG] dog_info.views: User couldn't be added to ip address
-2018-07-29 13:21:52,196 [DEBUG] dog_info.views: User couldn't be added to ip address
-2018-07-29 13:22:20,009 [DEBUG] dog_info.views: User with that email already exists
-2018-07-29 13:22:34,231 [DEBUG] dog_info.views: 'User' object has no attribute 'request_data_set'
-2018-07-29 13:25:40,626 [DEBUG] dog_info.views: You have made 11 requests this hour
-2018-07-29 13:31:07,809 [DEBUG] dog_info.views: 'method' object is not iterable
+2018-07-29 16:30:56,708 [WARNING] django.request: Not Found: /api/v1/get_dog/7b49bbc6-d87b-42ce-87d5-fa512c2855f1
+2018-07-29 16:31:07,709 [WARNING] django.request: Not Found: /api/v1/get_dog/7b49bbc6-d87b-42ce-87d5-fa512c2855f
+2018-07-29 16:48:05,504 [WARNING] django.request: Not Found: /api/v1/get_dog/7b49bbc6-d87b-42ce-87d5-fa512c2855f
+2018-07-29 17:00:16,187 [DEBUG] dog_info.errors: Ip is 127.0.0.1
+2018-07-29 17:04:26,630 [ERROR] dog_info.errors: Status: 500 -- Ip: 127.0.0.1
+2018-07-29 17:34:31,853 [ERROR] dog_info.errors: Status: 404 -- Exception: Unknown error -- Ip: 127.0.0.1
+2018-07-29 17:34:31,854 [WARNING] django.request: Not Found: /api/v1/get_dog/7b49bbc6-d87b-42ce-87d5-fa512c2855f
+2018-07-29 17:36:31,767 [ERROR] dog_info.errors: Status: 404 -- Exception: Unknown error -- Ip: 127.0.0.1
+2018-07-29 17:36:31,767 [WARNING] django.request: Not Found: /api/v1/get_dog/7b49bbc6-d87b-42ce-87d5-fa512c2855f
+2018-07-29 17:36:46,009 [ERROR] dog_info.errors: Status: 404 -- Exception: Unknown error -- Ip: 127.0.0.1
+2018-07-29 17:36:46,009 [WARNING] django.request: Not Found: /api/v1/get_dog/7b49bbc6-d87b-42ce-87d5-fa512c2855f
+2018-07-29 17:44:59,600 [WARNING] dog_info.errors: Status: 404 -- Path: api/v1/get_dog/7b49bbc6-d87b-42ce-87d5-fa512c2855f -- Ip: 127.0.0.1
+2018-07-29 17:44:59,601 [WARNING] django.request: Not Found: /api/v1/get_dog/7b49bbc6-d87b-42ce-87d5-fa512c2855f
+2018-07-29 17:46:13,472 [WARNING] dog_info.errors: Status: 404 -- Path: api/v1/get_dog/7b49bbc6-d87b-42ce-87d5-fa512c2855f -- Ip: 127.0.0.1
+2018-07-29 17:46:13,472 [WARNING] django.request: Not Found: /api/v1/get_dog/7b49bbc6-d87b-42ce-87d5-fa512c2855f
+2018-07-29 17:46:41,319 [WARNING] dog_info.errors: Status: 404 -- Path: static/admin/js/vendor/jquery/jquery.min.js -- Ip: 127.0.0.1
+2018-07-29 17:46:41,320 [WARNING] django.request: Not Found: /static/admin/js/vendor/jquery/jquery.min.js
+2018-07-29 17:46:41,325 [WARNING] dog_info.errors: Status: 404 -- Path: static/admin/js/actions.min.js -- Ip: 127.0.0.1
+2018-07-29 17:46:41,326 [WARNING] django.request: Not Found: /static/admin/js/actions.min.js
+2018-07-29 17:46:41,332 [WARNING] dog_info.errors: Status: 404 -- Path: static/admin/js/prepopulate.min.js -- Ip: 127.0.0.1
+2018-07-29 17:46:41,333 [WARNING] django.request: Not Found: /static/admin/js/prepopulate.min.js
+2018-07-29 17:46:41,338 [WARNING] dog_info.errors: Status: 404 -- Path: static/admin/js/vendor/xregexp/xregexp.min.js -- Ip: 127.0.0.1
+2018-07-29 17:46:41,339 [WARNING] django.request: Not Found: /static/admin/js/vendor/xregexp/xregexp.min.js
+2018-07-29 17:52:59,759 [DEBUG] dog_info.views: get_logic() missing 1 required positional argument: 'id'
+2018-07-29 18:00:32,770 [DEBUG] dog_info.views: local variable 'item' referenced before assignment
+2018-07-29 18:00:41,935 [DEBUG] dog_info.views: 'Dog' object does not support item deletion
+2018-07-29 18:01:27,309 [DEBUG] dog_info.views: list indices must be integers or slices, not str
+2018-07-29 18:05:59,434 [DEBUG] dog_info.views: create_user_logic() takes 2 positional arguments but 3 were given

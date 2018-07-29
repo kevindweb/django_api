@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from django.http import JsonResponse
 from django.core import serializers
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 from django.contrib.auth import get_user_model
 from dog_info.models import Dog, RequestData
 User = get_user_model()
@@ -13,20 +13,29 @@ User = get_user_model()
 class Handler():
     request_limit = 20
     curr_timezone = timezone.utc
-    def __init__(self, request, default_data, default_status, authenticate=False):
+    app_name = "dog_info"
+    def __init__(self, request, default_status, **kwargs):
         self.request = request
-        self.data = default_data
         self.status = default_status
+        self.id = kwargs.get("id", "")
+        self.data = kwargs.get("default_data", {})
+        self.authenticate = kwargs.get("authenticate", False)
+        self.model = kwargs.get("model", None)
+        if not self.model:
+            raise Exception("No abstracted model", 500)
         self.logs = logging.getLogger(__name__)
-        self.authenticate = authenticate
 
     def get_client_ip(self):
-        x_forwarded_for = self.request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0]
-        else:
-            ip = self.request.META.get('REMOTE_ADDR')
-        return ip
+        try:
+            x_forwarded_for = self.request.META.get('HTTP_X_FORWARDED_FOR')
+            if x_forwarded_for:
+                ip = x_forwarded_for.split(',')[0]
+            else:
+                ip = self.request.META.get('REMOTE_ADDR')
+            return ip
+        except:
+            # we could not get ip address
+            raise Exception("Error validating ip address", 500)
 
     def check_request_num(self):
         self.ip_address = self.get_client_ip()
@@ -59,12 +68,16 @@ class Handler():
             timeout = True
         return timeout, num_requests
 
-    def authenticate_request(self, body):
+    def authenticate_request(self):
+        try:
+            api_token = self.request.META.get('HTTP_TOKEN')
+        except:
+            raise Exception("'Token' header not found", 401)
         try:
             authenticated = len(User.objects.filter(
-                api_token=body["api_token"])) > 0
+                api_token=api_token)) > 0
         except:
-            raise Exception("Invalid api_token", 401)
+            raise Exception("Invalid token", 401)
         if not authenticated:
             raise Exception("Authentication failed", 401)
         # otherwise continue
@@ -81,14 +94,27 @@ class Handler():
                 elif func.__name__ != "create_user_logic":
                     # a user has not been created on this ip
                     raise Exception("A user has not been created yet", 401)
-            body = json.loads(self.request.body)
             if self.authenticate:
                 # need to authenticate api_token before moving forward
-                print("authenticating request")
-                self.authenticate_request(body)
-            if set(body.keys()) == set(self.data["request_schema"].keys()):
-                func(self, body)
-                # call the function passed in to handle specific logic
+                self.authenticate_request()
+            if self.request.method == "GET":
+                func(self, self.model, self.id)
+            else:
+                body = json.loads(self.request.body)
+                if set(body.keys()) == set(self.data["request_schema"].keys()):
+                    func(self, self.model, body)
+                    # call the function passed in to handle specific logic
+            if self.item['model'] == ("%s.user" % self.app_name):
+                # remove fields unnecessary for API user
+                del self.item['pk']
+                del self.item["fields"]["last_login"]
+                del self.item["fields"]["is_staff"]
+                del self.item["fields"]["is_superuser"]
+                del self.item["fields"]["groups"]
+                del self.item["fields"]["user_permissions"]
+            del self.item['model']
+            # remove model property
+            self.data = {"data": self.item}
             return JsonResponse(self.data, status=self.status)
         except Exception as e:
             # handle any exception by returning it and the status code
@@ -108,20 +134,19 @@ class Handler():
             self.logs.debug(msg)
             return JsonResponse(error, status=status, json_dumps_params={"indent": 2})
 
-    def get_dog_logic(self, body):
+    def get_logic(self, model, id):
         # our objects have the same keys
             self.status = 200
             try:
-                dog = Dog.objects.filter(id=body["dog"])
+                items = model.objects.filter(id=id)
             except:
-                raise Exception("Error finding dog", 500)
-            if len(dog) == 0:
-                raise Exception("Could not find dog", 404)
-            dog = json.loads(serializers.serialize('json', [dog[0], ]))
-            self.data = {"dog": dog}
+                raise Exception("Error finding item", 500)
+            if len(items) == 0:
+                raise Exception("Could not find item", 404)
+            self.item = json.loads(serializers.serialize('json', [items[0], ]))[0]
                 
     
-    def create_user_logic(self, body):
+    def create_user_logic(self, model, body):
         username = body['username']
         password = body['password']
         email = body['email']
@@ -162,7 +187,8 @@ class Handler():
                 else:
                     # add ip address
                     now = datetime.now(self.curr_timezone)
-                    ip = RequestData.objects.create(ip_address=self.ip_address, earliest_request=now, last_request=now, requests_this_hour=1)
+                    ip = RequestData.objects.create(
+                        ip_address=self.ip_address, earliest_request=now, last_request=now, requests_this_hour=1)
                     ip.users.add(user)
                 # except:
                 #     raise Exception("User couldn't be added to ip address", 500)
@@ -171,25 +197,16 @@ class Handler():
         else:
             self.status = 200
             # already created this valid user
-        user = json.loads(serializers.serialize('json', [user, ]))
-        self.data = {
-            "user": user
-        }
+        self.item = json.loads(serializers.serialize('json', [user, ]))[0]
             
 
 @csrf_exempt
-@require_POST
-def get_dog(request):
+@require_GET
+def get_dog(request, id):
     # receive dog from id 
-    data = {
-        "error": "Bad request",
-        "request_schema": {
-            "api_token": "UUID",
-            "dog": "UUID"
-        }
-    }
-    abstract_request = Handler(request, data, 400, authenticate=True)
-    return abstract_request.start(Handler.get_dog_logic)
+    print(request.method)
+    abstract_request = Handler(request, 400, authenticate=True, id=id, model=Dog)
+    return abstract_request.start(Handler.get_logic)
 
 @csrf_exempt
 @require_POST
@@ -204,5 +221,5 @@ def create_user(request):
             "full_name": "string (can be empty)"
         }
     }
-    abstract_request = Handler(request, data, 400)
+    abstract_request = Handler(request, 400, default_data=data, model=User)
     return abstract_request.start(Handler.create_user_logic)
