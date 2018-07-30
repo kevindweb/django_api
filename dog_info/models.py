@@ -11,7 +11,7 @@ class User(AbstractUser):
 max_field_length = 50
 
 class Dog(models.Model):
-    sex_choices = [('M', 'Male'), ('F', 'Female'), ('N/A', 'Not Given')]
+    sex_choices = [('M', 'Male'), ('F', 'Female'), ('X', 'Not Given')]
     # data model below
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=max_field_length)
