@@ -1,63 +1,10 @@
 2018-07-29 23:46:32,260 [WARNING] django.request: Not Found: /api/v1/g
 2018-07-29 23:47:09,174 [WARNING] django.request: Not Found: /api/v1/g
 2018-07-30 00:00:30,716 [ERROR] django.request: Internal Server Error: /api/v1/get_dog/7b49bbc6-d87b-42ce-87d5-fa512c2855f0
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/fields/__init__.py", line 2363, in to_python
-    return uuid.UUID(value)
-  File "/usr/local/Cellar/python/3.7.0/Frameworks/Python.framework/Versions/3.7/lib/python3.7/uuid.py", line 157, in __init__
-    hex = hex.replace('urn:', '').replace('uuid:', '')
-AttributeError: 'dict' object has no attribute 'replace'
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/Users/kevindeems/Desktop/codingTests/python_learning/dog_server/dog_info/resources/router.py", line 36, in dispatch
-    return handler_method(request, *args, **kwargs)
-  File "/Users/kevindeems/Desktop/codingTests/python_learning/dog_server/dog_info/views.py", line 28, in post
-    return abstract_request.start(Handler.get_logic)
-  File "/Users/kevindeems/Desktop/codingTests/python_learning/dog_server/dog_info/resources/router.py", line 160, in start
-    func(self, self.model, body)
-  File "/Users/kevindeems/Desktop/codingTests/python_learning/dog_server/dog_info/resources/router.py", line 182, in get_logic
-    if len(items) == 0:
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/query.py", line 254, in __len__
-    self._fetch_all()
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/query.py", line 1179, in _fetch_all
-    self._result_cache = list(self._iterable_class(self))
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/query.py", line 53, in __iter__
-    results = compiler.execute_sql(chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/sql/compiler.py", line 1055, in execute_sql
-    sql, params = self.as_sql()
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/sql/compiler.py", line 461, in as_sql
-    where, w_params = self.compile(self.where) if self.where is not None else ("", [])
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/sql/compiler.py", line 393, in compile
-    sql, params = node.as_sql(self, self.connection)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/sql/where.py", line 80, in as_sql
-    sql, params = compiler.compile(child)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/sql/compiler.py", line 393, in compile
-    sql, params = node.as_sql(self, self.connection)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/lookups.py", line 161, in as_sql
-    rhs_sql, rhs_params = self.process_rhs(compiler, connection)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/lookups.py", line 260, in process_rhs
-    return super().process_rhs(compiler, connection)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/lookups.py", line 93, in process_rhs
-    return self.get_db_prep_lookup(value, connection)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/lookups.py", line 187, in get_db_prep_lookup
-    [get_db_prep_value(value, connection, prepared=True)]
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/fields/__init__.py", line 2354, in get_db_prep_value
-    value = self.to_python(value)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/fields/__init__.py", line 2368, in to_python
-    params={'value': value},
-django.core.exceptions.ValidationError: ["'{'name': 'Rocky', 'breed': 'Golden Retriever', 'favorite_activity': 'Running for frisbees', 'sex': 'M'}' is not a valid UUID."]
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.7/site-packages/django/http/response.py", line 49, in __init__
-    self.status_code = int(status)
-ValueError: invalid literal for int() with base 10: 'invalid'
-
-During handling of the above exception, another exception occurred:
-
+2018-07-31 20:31:03,519 [WARNING] django.request: Not Found: /api/v1/get_dog/7b49bbc6-d87b-42ce-87d5-fa512c2855f0
+2018-07-31 20:31:34,493 [WARNING] django.request: Not Found: /api/v1/get_dog/fe6441f7-9d7d-4222-90bd-ac9a2947bf44
+2018-07-31 20:32:01,234 [WARNING] django.request: Not Found: /api/v1/dog/fe6441f7-9d7d-4222-90bd-ac9a2947bf41
+2018-07-31 21:19:20,512 [ERROR] django.request: Internal Server Error: /api/v1/create_user
 Traceback (most recent call last):
   File "/usr/local/lib/python3.7/site-packages/django/core/handlers/exception.py", line 35, in inner
     response = get_response(request)
@@ -67,124 +14,10 @@ Traceback (most recent call last):
     response = wrapped_callback(request, *callback_args, **callback_kwargs)
   File "/usr/local/lib/python3.7/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
     return view_func(*args, **kwargs)
-  File "/Users/kevindeems/Desktop/codingTests/python_learning/dog_server/dog_info/resources/router.py", line 64, in dispatch
-    return JsonResponse(error, status=status, json_dumps_params={"indent": 2})
-  File "/usr/local/lib/python3.7/site-packages/django/http/response.py", line 510, in __init__
-    super().__init__(content=data, **kwargs)
-  File "/usr/local/lib/python3.7/site-packages/django/http/response.py", line 283, in __init__
-    super().__init__(*args, **kwargs)
-  File "/usr/local/lib/python3.7/site-packages/django/http/response.py", line 51, in __init__
-    raise TypeError('HTTP status code must be an integer.')
-TypeError: HTTP status code must be an integer.
-2018-07-30 00:13:14,558 [ERROR] django.request: Internal Server Error: /api/v1/get_dog/7b49bbc6-d87b-42ce-87d5-fa512c2855f0
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/exception.py", line 35, in inner
-    response = get_response(request)
-  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/base.py", line 128, in _get_response
-    response = self.process_exception_by_middleware(e, request)
-  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/base.py", line 126, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "/usr/local/lib/python3.7/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
-    return view_func(*args, **kwargs)
-  File "/Users/kevindeems/Desktop/codingTests/python_learning/dog_server/dog_info/resources/router.py", line 36, in dispatch
-    return handler_method(request, *args, **kwargs)
-  File "/Users/kevindeems/Desktop/codingTests/python_learning/dog_server/dog_info/views.py", line 28, in post
-    return abstract_request.start(Handler.post_logic)
-  File "/Users/kevindeems/Desktop/codingTests/python_learning/dog_server/dog_info/resources/router.py", line 167, in start
-    if self.item and self.item['model'] == ("%s.user" % self.app_name):
-AttributeError: 'Handler' object has no attribute 'item'
-2018-07-30 00:14:42,893 [ERROR] django.request: Internal Server Error: /api/v1/get_dog/7b49bbc6-d87b-42ce-87d5-fa512c2855f0
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/exception.py", line 35, in inner
-    response = get_response(request)
-  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/base.py", line 128, in _get_response
-    response = self.process_exception_by_middleware(e, request)
-  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/base.py", line 126, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "/usr/local/lib/python3.7/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
-    return view_func(*args, **kwargs)
-  File "/Users/kevindeems/Desktop/codingTests/python_learning/dog_server/dog_info/resources/router.py", line 36, in dispatch
-    return handler_method(request, *args, **kwargs)
-  File "/Users/kevindeems/Desktop/codingTests/python_learning/dog_server/dog_info/views.py", line 28, in post
-    return abstract_request.start(Handler.post_logic)
-  File "/Users/kevindeems/Desktop/codingTests/python_learning/dog_server/dog_info/resources/router.py", line 178, in start
-    self.data = {"data": self.item if self.item else self.data}
-AttributeError: 'Handler' object has no attribute 'item'
-2018-07-30 01:11:30,716 [ERROR] django.request: Internal Server Error: /api/v1/dog
-Traceback (most recent call last):
-  File "/Users/kevindeems/Desktop/codingTests/python_learning/dog_server/dog_info/resources/router.py", line 200, in post_logic
-    birth_day = datetime.strptime(body["birth_day"], "%m/%d/%Y")
-  File "/usr/local/Cellar/python/3.7.0/Frameworks/Python.framework/Versions/3.7/lib/python3.7/_strptime.py", line 577, in _strptime_datetime
-    tt, fraction, gmtoff_fraction = _strptime(data_string, format)
-  File "/usr/local/Cellar/python/3.7.0/Frameworks/Python.framework/Versions/3.7/lib/python3.7/_strptime.py", line 359, in _strptime
-    (data_string, format))
-ValueError: time data '13/41/1998' does not match format '%m/%d/%Y'
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.7/site-packages/django/db/backends/utils.py", line 85, in _execute
-    return self.cursor.execute(sql, params)
-  File "/usr/local/lib/python3.7/site-packages/django/db/backends/sqlite3/base.py", line 303, in execute
-    return Database.Cursor.execute(self, query, params)
-sqlite3.IntegrityError: NOT NULL constraint failed: dog_info_dog.birth_day
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "/Users/kevindeems/Desktop/codingTests/python_learning/dog_server/dog_info/resources/router.py", line 36, in dispatch
-    return handler_method(request, *args, **kwargs)
-  File "/Users/kevindeems/Desktop/codingTests/python_learning/dog_server/dog_info/views.py", line 29, in post
-    return abstract_request.start(Handler.post_logic)
-  File "/Users/kevindeems/Desktop/codingTests/python_learning/dog_server/dog_info/resources/router.py", line 162, in start
-    func(self, model=self.model, body=body, id=self.id)
-  File "/Users/kevindeems/Desktop/codingTests/python_learning/dog_server/dog_info/resources/router.py", line 206, in post_logic
-    sex=body["sex"], birth_day=birth_day)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/manager.py", line 82, in manager_method
-    return getattr(self.get_queryset(), name)(*args, **kwargs)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/query.py", line 417, in create
-    obj.save(force_insert=True, using=self.db)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/base.py", line 729, in save
-    force_update=force_update, update_fields=update_fields)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/base.py", line 759, in save_base
-    updated = self._save_table(raw, cls, force_insert, force_update, using, update_fields)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/base.py", line 842, in _save_table
-    result = self._do_insert(cls._base_manager, using, fields, update_pk, raw)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/base.py", line 880, in _do_insert
-    using=using, raw=raw)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/manager.py", line 82, in manager_method
-    return getattr(self.get_queryset(), name)(*args, **kwargs)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/query.py", line 1125, in _insert
-    return query.get_compiler(using=using).execute_sql(return_id)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/sql/compiler.py", line 1285, in execute_sql
-    cursor.execute(sql, params)
-  File "/usr/local/lib/python3.7/site-packages/django/db/backends/utils.py", line 100, in execute
-    return super().execute(sql, params)
-  File "/usr/local/lib/python3.7/site-packages/django/db/backends/utils.py", line 68, in execute
-    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
-  File "/usr/local/lib/python3.7/site-packages/django/db/backends/utils.py", line 77, in _execute_with_wrappers
-    return executor(sql, params, many, context)
-  File "/usr/local/lib/python3.7/site-packages/django/db/backends/utils.py", line 85, in _execute
-    return self.cursor.execute(sql, params)
-  File "/usr/local/lib/python3.7/site-packages/django/db/utils.py", line 89, in __exit__
-    raise dj_exc_value.with_traceback(traceback) from exc_value
-  File "/usr/local/lib/python3.7/site-packages/django/db/backends/utils.py", line 85, in _execute
-    return self.cursor.execute(sql, params)
-  File "/usr/local/lib/python3.7/site-packages/django/db/backends/sqlite3/base.py", line 303, in execute
-    return Database.Cursor.execute(self, query, params)
-django.db.utils.IntegrityError: NOT NULL constraint failed: dog_info_dog.birth_day
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/exception.py", line 35, in inner
-    response = get_response(request)
-  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/base.py", line 128, in _get_response
-    response = self.process_exception_by_middleware(e, request)
-  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/base.py", line 126, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "/usr/local/lib/python3.7/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
-    return view_func(*args, **kwargs)
-  File "/Users/kevindeems/Desktop/codingTests/python_learning/dog_server/dog_info/resources/router.py", line 46, in dispatch
-    print(type(e.__name__))
-AttributeError: 'IntegrityError' object has no attribute '__name__'
+  File "/usr/local/lib/python3.7/site-packages/django/views/decorators/http.py", line 40, in inner
+    return func(request, *args, **kwargs)
+  File "/Users/kevindeems/Desktop/codingTests/python_learning/dog_server/dog_info/views.py", line 46, in create_user
+    return abstract_request.start(Handler.create_user_logic)
+  File "/Users/kevindeems/Desktop/codingTests/python_learning/dog_server/dog_info/resources/router.py", line 198, in start
+    response = func(self, model=self.model, body=body, id=self.id)
+TypeError: create_user_logic() got an unexpected keyword argument 'id'

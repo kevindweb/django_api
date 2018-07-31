@@ -1,11 +1,13 @@
 import json
 import logging
+import re
 from datetime import datetime, timezone
 from django.db import IntegrityError
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.core import serializers
 from dog_info.models import RequestData
+import dog_info.models as AllModels
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
@@ -28,13 +30,19 @@ class RequestResource:
     @csrf_exempt
     def dispatch(cls, request, *args, **kwargs):
         try:
+            item_path = request.path.split("/")[3].capitalize()
+            # get django model from path
+            if hasattr(AllModels, item_path):
+                model = getattr(AllModels, item_path)
+            else:
+                raise Exception("Model not found", 500)
             request_handler = cls()
             # cls / self
             if request.method in cls.http_methods:
                 handler_method = get_handler_method(
                     request_handler, request.method)
                 if handler_method:
-                    return handler_method(request, *args, **kwargs)
+                    return handler_method(request, model, *args, **kwargs)
 
             methods = [method for method in cls.http_methods if get_handler_method(
                 request_handler, method)]
@@ -79,8 +87,21 @@ class Handler():
         self.authenticate = kwargs.get("authenticate", False)
         self.model = kwargs.get("model", None)
         self.warnings = []
+        if "request_schema" in self.data:
+            self.fields = list(self.data["request_schema"].keys())
         if not self.model:
             raise Exception("No item model", 500)
+
+    def error(self, msg, code):
+        # avoid exceptions as much as possible
+        if hasattr(self, "item"):
+            del self.item
+            # make sure there are no errors with
+        self.status = code
+        self.error_msg = {
+            "error msgs": msg
+        }
+        return JsonResponse(self.error_msg, status=self.status)
 
     def get_client_ip(self):
         try:
@@ -141,6 +162,37 @@ class Handler():
             raise Exception("Authentication failed", 401)
         # otherwise continue
 
+    def char_check(self, x):
+        return str(x)[0]
+
+    def str_check(self, x):
+        return str(x)
+
+    def int_check(self, x):
+        return int(x)
+
+    def datetime_check(self, x):
+        return datetime.strptime(x, "%m/%d/%Y")
+
+    def assert_fields(self, body):
+        # type check each field
+        field_to_type = {
+            "string": self.str_check,
+            "string or empty string": self.str_check,
+            "email": self.str_check,
+            "integer": self.int_check,
+            "mm/dd/yyyy": self.datetime_check, 
+            "character": self.char_check
+        }
+        for field in self.fields:
+            field_value = self.data["request_schema"][field]
+            field_type = re.search(r'\((.*?)\)', field_value).group(1)
+            try:
+                body[field] = field_to_type[field_type](body[field])
+            except:
+                self.err_pass
+        return body
+
     def start(self, func):
         # receive request and apply context-given logic
         request_timeout, num_requests = self.check_request_num()
@@ -156,12 +208,24 @@ class Handler():
             # need to authenticate api_token before moving forward
             self.authenticate_request()
         if self.request.method == "GET":
-            func(self, self.model, self.id)
+            response = func(self, self.model, self.id)
+            if response:
+                return response
+                # we errored out
         else:
             body = json.loads(self.request.body)
-            if set(body.keys()) == set(self.data["request_schema"].keys()):
-                func(self, model=self.model, body=body, id=self.id)
-                # call the function passed in to handle specific logic
+            if set(body.keys()) == set(self.fields):                
+                # parse the specific type of field (datetime for example)
+                self.err_pass = False
+                try:
+                    body = self.assert_fields(body)
+                except:
+                    self.err_pass = True
+                if not self.err_pass:
+                    # call the function passed in to handle specific logic
+                    response = func(self, model=self.model, body=body, id=self.id)
+                    if response:
+                        return response
         if hasattr(self, "item"):
             # item will only be here if query was successful
             if self.item['model'] == ("%s.user" % self.app_name):
@@ -182,13 +246,13 @@ class Handler():
 
     def get_logic(self, model, id):
         # our objects have the same keys
-        self.status = 200
         try:
             items = model.objects.filter(id=id)
         except:
-            raise Exception("Error finding item", 500)
+            return self.error("Error finding item", 500)
         if len(items) == 0:
-            raise Exception("Could not find item", 404)
+            return self.error("Could not find item", 404)
+        self.status = 200
         self.item = json.loads(
             serializers.serialize('json', [items[0], ]))[0]
 
@@ -196,27 +260,21 @@ class Handler():
         # logic to run if we get a post request with required data
         model = kwargs.get("model")
         body = kwargs.get("body")
-        birth_day = None
         try:
-            birth_day = datetime.strptime(body["birth_day"], "%m/%d/%Y")
-        except:
-            self.warnings += "Incorrect birth_day format (mm/dd/yyyy)"
-        try:
-            item = model.objects.create(
-                    name=body["name"], breed=body["breed"], favorite_activity=body["favorite_activity"],
-                    sex=body["sex"], birth_day=birth_day)
+            item = model.objects.create(**body)
         except IntegrityError:
-            raise Exception("Invalid request field format", 400)
+            return self.error("Invalid request field format", 400)
         except:
-            raise Exception("Could not create item", 500)
+            return self.error("Could not create item", 500)
+        self.status = 201
         self.item = json.loads(serializers.serialize('json', [item, ]))[0]
 
-    def create_user_logic(self, model, body):
+    def create_user_logic(self, **kwargs):
+        body = kwargs.get("body")
         username = body['username']
         password = body['password']
         email = body['email']
         full_name = body['full_name']
-        # user = User.objects.filter(username=username).first()
         user = User.objects.filter(username=username)
         if len(user) > 0:
             user = user[0]
@@ -224,7 +282,7 @@ class Handler():
             # username with those credentials does not exist
             if(len(User.objects.filter(email=email)) > 0):
                 # user with the same email already exists
-                raise Exception("User with that email already exists", 400)
+                return self.error("User with that email already exists", 400)
             else:
                 try:
                     first_name = ""
@@ -238,7 +296,7 @@ class Handler():
                     user = User.objects.create_user(
                         username=username, email=email, password=password, first_name=first_name, last_name=last_name)
                 except:
-                    raise Exception("Could not create user", 500)
+                    return self.error("Could not create user", 500)
                 user.save()
                 self.status = 201
                 # try:
@@ -255,10 +313,8 @@ class Handler():
                     ip = RequestData.objects.create(
                         ip_address=self.ip_address, earliest_request=now, last_request=now, requests_this_hour=1)
                     ip.users.add(user)
-                # except:
-                #     raise Exception("User couldn't be added to ip address", 500)
         elif not user.check_password(password):
-            raise Exception("User already created but invalid password", 401)
+            return self.error("User already created but invalid password", 401)
         else:
             self.status = 200
             # already created this valid user

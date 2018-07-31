@@ -6,14 +6,14 @@ User = get_user_model()
 from dog_info.resources.router import RequestResource, Handler
             
 class DogView(RequestResource):
-    def get(self, request, id):
+    def get(self, request, model, id):
         # receive dog from id
         abstract_request = Handler(
-            request, 200, authenticate=True, id=id, model=Dog)
+            request, 404, authenticate=True, id=id, model=model)
         return abstract_request.start(Handler.get_logic)
     
-    def post(self, request):
-        # receive dog from id
+    def post(self, request, model):
+        # create dog from request data
         data = {
             "error": "Bad request",
             "request_schema": {
@@ -25,7 +25,7 @@ class DogView(RequestResource):
             }
         }
         abstract_request = Handler(
-            request, 201, default_data=data, authenticate=True, model=Dog)
+            request, 400, default_data=data, authenticate=True, model=Dog)
         return abstract_request.start(Handler.post_logic)
     
 
@@ -38,9 +38,9 @@ def create_user(request):
         "request_schema": {
             "username": "userName (string)",
             "password": "passw0rd1 (string)",
-            "email": "example@example.com (string as email)",
-            "full_name": "Patrick Star (string -- can be empty)"
+            "email": "example@example.com (email)",
+            "full_name": "Patrick Star (string or empty string)"
         }
     }
-    abstract_request = Handler(request, 201, default_data=data, model=User)
+    abstract_request = Handler(request, 400, default_data=data, model=User)
     return abstract_request.start(Handler.create_user_logic)
