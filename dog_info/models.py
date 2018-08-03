@@ -22,6 +22,13 @@ class Dog(models.Model):
     sex = models.CharField(choices=sex_choices, max_length=1)
     objects = models.Manager()
 
+class Shelter(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=max_field_length)
+    number_dogs = models.IntegerField()
+    manager_name = models.CharField(max_length=max_field_length)
+    objects = models.Manager()
+
 class RequestData(models.Model):
     ip_address = models.GenericIPAddressField(unique=True)
     users = models.ManyToManyField(User)
